@@ -124,29 +124,26 @@ export const login = createAsyncThunk(
 
 // SignUp thunk
 export const signUp = createAsyncThunk(
-    'user/signup',
-    async (data, thunkAPI) => {
-        try {
-            const payload = {
-                fullname: data.fullName,
-                email: data.email,
-                password: data.password,
-            };
+  'user/signup',
+  async (data, thunkAPI) => {
+    try {
+      const payload = {
+        fullname: data.fullName, // must match backend field
+        email: data.email,
+        password: data.password,
+      };
 
-            const res = await axiosInstance.post('/signup', payload);
+      const res = await axiosInstance.post('/signup', payload);
 
-            // Update Redux authUser immediately
-            thunkAPI.dispatch(authSlice.actions.setAuthUser(res.data.user));
+      thunkAPI.dispatch(authSlice.actions.setAuthUser(res.data.user));
+      connectsocket(res.data.user._id);
 
-            // Connect socket after signup
-            connectsocket(res.data.user._id);
-
-            return res.data.user;
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to sign up');
-            return thunkAPI.rejectWithValue(error.response?.data || error.message);
-        }
+      return res.data.user;
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to sign up');
+      return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }
+  }
 );
 
 // Update profile thunk
