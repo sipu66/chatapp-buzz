@@ -16,8 +16,11 @@ cloudinary.config({
  initsocket(server);
 
 
-server.listen(process.env.PORT, () => {
-    console.log(`Server is running on port ${process.env.PORT}`);
+const PORT = process.env.PORT || 4000;  // fallback to 4000 if PORT is undefined
+
+server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
+
 
 
