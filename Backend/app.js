@@ -22,6 +22,8 @@ app.use(express.json());
 app.use(urlencoded({ extended: true }));
 
 
+
+
 app.use('/api/v1/', userRoutes);
 app.use('/api/v1/message',messageRoutes)
 
