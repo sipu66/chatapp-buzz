@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Send } from "lucide-react";
-import {
-  fetchUsers,
-  setOnlineUsers,
-} from "../store/slices/authSlice";
+import { Send, ArrowLeft } from "lucide-react";
+import { fetchUsers, setOnlineUsers } from "../store/slices/authSlice";
 import SelectedUserHeader from "./SelectedUserHeader";
 import {
   setSelectedUser,
@@ -87,148 +84,178 @@ const Home = () => {
     }
   };
 
+  // Detect mobile view
+  const [isMobileView, setIsMobileView] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobileView(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div className="flex h-[calc(100vh-64px)]">
       {/* Sidebar */}
-      <div className="w-1/4 bg-gray-100 p-4 border-r h-full overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Users</h2>
-        {users.length > 0 ? (
-          users.map((user) => {
-            const unreadCount = unreadMessages[user._id] || 0;
-            const lastMessage =
-              messages[user._id]?.[messages[user._id].length - 1]?.text || "";
+      {(!isMobileView || !selectedUser) && (
+        <div className="w-full md:w-1/4 bg-gray-100 p-4 border-r h-full overflow-y-auto">
+          <h2 className="text-xl font-bold mb-4">Users</h2>
+          {users.length > 0 ? (
+            users.map((user) => {
+              const unreadCount = unreadMessages[user._id] || 0;
+              const lastMessage =
+                messages[user._id]?.[messages[user._id].length - 1]?.text || "";
 
-            return (
-              <div
-                key={user._id}
-                onClick={() => {
-                  dispatch(setSelectedUser(user));
-                  dispatch(fetchMessages(user._id));
-                }}
-                className={`cursor-pointer py-2 px-3 rounded mb-1 flex justify-between items-center ${
-                  selectedUser?._id === user._id
-                    ? "bg-blue-200"
-                    : "hover:bg-blue-100"
-                }`}
-              >
-                <div className="flex items-center space-x-2">
-                  {user.avatar?.url ? (
-                    <img
-                      src={user.avatar.url}
-                      alt="avatar"
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm text-white">
-                      {user.fullname[0]}
-                    </div>
-                  )}
-                  <span>{user.fullname}</span>
-                  {onlineUsers.includes(user._id) && (
-                    <span className="text-green-600">●</span>
-                  )}
-                </div>
-                <div className="flex items-center space-x-2">
-                  {lastMessage && (
-                    <span className="text-sm text-gray-500">
-                      {lastMessage.slice(0, 10)}...
-                    </span>
-                  )}
-                  {unreadCount > 0 && (
-                    <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
-                      {unreadCount} msg
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })
-        ) : (
-          <p className="text-gray-500">No users found</p>
-        )}
-      </div>
-
-      {/* Chat Section */}
-      <div className="flex-1 flex flex-col">
-        {selectedUser && (
-          <SelectedUserHeader
-            selectedUser={selectedUser}
-            onlineUsers={onlineUsers}
-          />
-        )}
-
-        <div className="flex-1 p-4 overflow-y-auto">
-          {selectedUser ? (
-            messages[selectedUser._id]?.length > 0 ? (
-              messages[selectedUser._id].map((msg, idx) => (
+              return (
                 <div
-                  key={idx}
-                  className={`mb-2 flex ${
-                    msg.senderId === authUser._id ? "justify-end" : "justify-start"
+                  key={user._id}
+                  onClick={() => {
+                    dispatch(setSelectedUser(user));
+                    dispatch(fetchMessages(user._id));
+                  }}
+                  className={`cursor-pointer py-2 px-3 rounded mb-1 flex justify-between items-center ${
+                    selectedUser?._id === user._id
+                      ? "bg-blue-200"
+                      : "hover:bg-blue-100"
                   }`}
                 >
                   <div className="flex items-center space-x-2">
-                    {msg.senderId !== authUser._id && (
+                    {user.avatar?.url ? (
                       <img
-                        src={selectedUser.avatar?.url}
+                        src={user.avatar.url}
                         alt="avatar"
-                        className="w-6 h-6 rounded-full object-cover"
+                        className="w-8 h-8 rounded-full object-cover"
                       />
+                    ) : (
+                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm text-white">
+                        {user.fullname[0]}
+                      </div>
                     )}
-                    <span
-                      className={`inline-block px-3 py-2 rounded-lg max-w-[60%] break-words ${
-                        msg.senderId === authUser._id
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-200 text-gray-900"
-                      }`}
-                    >
-                      {msg.text}
-                    </span>
-                    {msg.senderId === authUser._id && (
-                      <button
-                        onClick={() => handleDelete(msg._id)}
-                        className="text-red-500 text-sm hover:text-red-700"
-                      >
-                        🗑
-                      </button>
+                    <span>{user.fullname}</span>
+                    {onlineUsers.includes(user._id) && (
+                      <span className="text-green-600">●</span>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {lastMessage && (
+                      <span className="text-sm text-gray-500">
+                        {lastMessage.slice(0, 10)}...
+                      </span>
+                    )}
+                    {unreadCount > 0 && (
+                      <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                        {unreadCount} msg
+                      </span>
                     )}
                   </div>
                 </div>
-              ))
+              );
+            })
+          ) : (
+            <p className="text-gray-500">No users found</p>
+          )}
+        </div>
+      )}
+
+      {/* Chat Section */}
+      {selectedUser && (
+        <div className="flex-1 flex flex-col">
+          {/* Back button for mobile */}
+          {isMobileView && (
+            <div className="p-2 border-b flex items-center md:hidden">
+              <button
+                onClick={() => dispatch(setSelectedUser(null))}
+                className="flex items-center space-x-2 text-blue-600"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Back</span>
+              </button>
+            </div>
+          )}
+
+          {selectedUser && (
+            <SelectedUserHeader
+              selectedUser={selectedUser}
+              onlineUsers={onlineUsers}
+            />
+          )}
+
+          <div className="flex-1 p-4 overflow-y-auto">
+            {selectedUser ? (
+              messages[selectedUser._id]?.length > 0 ? (
+                messages[selectedUser._id].map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`mb-2 flex ${
+                      msg.senderId === authUser._id
+                        ? "justify-end"
+                        : "justify-start"
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2">
+                      {msg.senderId !== authUser._id && (
+                        <img
+                          src={selectedUser.avatar?.url}
+                          alt="avatar"
+                          className="w-6 h-6 rounded-full object-cover"
+                        />
+                      )}
+                      <span
+                        className={`inline-block px-3 py-2 rounded-lg max-w-[60%] break-words ${
+                          msg.senderId === authUser._id
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-200 text-gray-900"
+                        }`}
+                      >
+                        {msg.text}
+                      </span>
+                      {msg.senderId === authUser._id && (
+                        <button
+                          onClick={() => handleDelete(msg._id)}
+                          className="text-red-500 text-sm hover:text-red-700"
+                        >
+                          🗑
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-center mt-10">
+                  No messages yet. Start chatting!
+                </p>
+              )
             ) : (
               <p className="text-gray-500 text-center mt-10">
-                No messages yet. Start chatting!
+                Select a user to start chatting
               </p>
-            )
-          ) : (
-            <p className="text-gray-500 text-center mt-10">
-              Select a user to start chatting
-            </p>
-          )}
-          <div ref={messagesEndRef}></div>
-        </div>
-
-        {/* Send Message */}
-        {selectedUser && (
-          <div className="p-4 border-t flex">
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              className="flex-1 border rounded-lg px-3 py-2 mr-2 focus:outline-none focus:border-blue-500"
-              placeholder="Type a message..."
-            />
-            <button
-              onClick={handleSendMessage}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center"
-            >
-              <Send className="w-4 h-4 mr-1" /> Send
-            </button>
+            )}
+            <div ref={messagesEndRef}></div>
           </div>
-        )}
-      </div>
+
+          {/* Send Message */}
+          {selectedUser && (
+            <div className="p-4 border-t flex">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                className="flex-1 border rounded-lg px-3 py-2 mr-2 focus:outline-none focus:border-blue-500"
+                placeholder="Type a message..."
+              />
+              <button
+                onClick={handleSendMessage}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center"
+              >
+                <Send className="w-4 h-4 mr-1" /> Send
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
 
 export default Home;
+
+    

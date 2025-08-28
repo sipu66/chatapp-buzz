@@ -20,8 +20,8 @@ const chatSlice = createSlice({
   reducers: {
     setSelectedUser: (state, action) => {
       state.selectedUser = action.payload;
-      // reset unread count when opening chat
-      if (state.unreadMessages[action.payload._id]) {
+      // Only reset unread count if payload is not null
+      if (action.payload && state.unreadMessages[action.payload._id]) {
         state.unreadMessages[action.payload._id] = 0;
       }
     },
@@ -34,26 +34,19 @@ const chatSlice = createSlice({
       state.messages[userId].push(msg);
 
       // if not currently viewing that user’s chat, increment unread
-    //   if (
-    //     !state.selectedUser ||
-    //     (state.selectedUser && state.selectedUser._id !== msg.senderId)
-    //   ) {
-    //     state.unreadMessages[msg.senderId] =
-    //       (state.unreadMessages[msg.senderId] || 0) + 1;
-    //   }
-    // },
-    if (!state.selectedUser || state.selectedUser._id !== msg.senderId) {
-    state.unreadMessages[msg.senderId] = (state.unreadMessages[msg.senderId] || 0) + 1;
-  }
-},
+      if (!state.selectedUser || state.selectedUser._id !== msg.senderId) {
+        state.unreadMessages[msg.senderId] =
+          (state.unreadMessages[msg.senderId] || 0) + 1;
+      }
+    },
     deleteMessage: (state, action) => {
-  const { userId, messageId } = action.payload;
-  if (state.messages[userId]) {
-    state.messages[userId] = state.messages[userId].filter(
-      (msg) => msg._id !== messageId
-    );
-  }
-},
+      const { userId, messageId } = action.payload;
+      if (state.messages[userId]) {
+        state.messages[userId] = state.messages[userId].filter(
+          (msg) => msg._id !== messageId
+        );
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchMessages.fulfilled, (state, action) => {
@@ -62,5 +55,5 @@ const chatSlice = createSlice({
   },
 });
 
-export  const { setSelectedUser, addMessage,deleteMessage,} = chatSlice.actions;
+export const { setSelectedUser, addMessage, deleteMessage } = chatSlice.actions;
 export default chatSlice.reducer;
